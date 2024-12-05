@@ -21,13 +21,17 @@ def unpad(s):
 
 # Функция для проверки читаемости текста
 def is_readable(text):
-    """Проверяет, состоит ли текст из читаемых символов."""
-    return all(c in string.printable for c in text)
+    """Проверяет, состоит ли текст из читаемых символов (латиница, кириллица, цифры, знаки)."""
+    allowed_chars = string.ascii_letters + string.digits + string.punctuation + string.whitespace + \
+                    "абвгдежзийклмнопрстуфхцчшщъыьэюяёАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯЁ"
+    return all(c in allowed_chars for c in text)
 
-# Функция для подбора ключа
-def brute_force_key():
+# Функция для подбора ключей и анализа текста
+def brute_force_keys():
     # Длина оставшихся символов в ключе
     remaining_length = 16 - len(base)
+    readable_texts = []
+
     for combo in product(chars, repeat=remaining_length):
         # Формируем ключ
         key = base + "".join(combo)
@@ -40,14 +44,27 @@ def brute_force_key():
             try:
                 decrypted_text = unpad(decrypted_data).decode('utf-8')
                 if is_readable(decrypted_text):
-                    print(f"Ключ найден: {key}")
-                    print(f"Расшифрованный текст:\n{decrypted_text}")
-                    return
+                    readable_texts.append((key, decrypted_text))
             except:
                 continue
         except Exception:
             continue
-    print("Ключ не найден.")
 
-# Запуск подбора ключа
-brute_force_key()
+    # Вывод всех читаемых текстов
+    print(f"Найдено {len(readable_texts)} читаемых текстов.")
+    for key, text in readable_texts:
+        print(f"Ключ: {key}")
+        print(f"Текст: {text}")
+        print("-" * 50)
+
+    # Поиск осмысленных текстов (опционально)
+    meaningful_texts = [text for key, text in readable_texts if " " in text or any(c.isalpha() for c in text)]
+    if meaningful_texts:
+        print("Осмысленные тексты:")
+        for text in meaningful_texts:
+            print(text)
+    else:
+        print("Осмысленных текстов не найдено.")
+
+# Запуск подбора ключей
+brute_force_keys()
